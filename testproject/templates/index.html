@@ -1,0 +1,134 @@
+{% load static %}
+<html>
+
+<head>
+    <title>Live Tes</title>
+    <script src="{% static 'vue.min.js' %}"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/axios/1.7.4/axios.min.js"></script>
+    <style>
+        body, html {
+            margin: 30px 0 0 0;
+            padding: 0;
+        }
+        .wrap {
+            width: 100%;
+            height: auto;
+            float: left;
+        }
+
+        .wrap > .inner {
+            width: 40%;
+            height: auto;
+            margin: 0 auto;
+        }
+
+        .wrap > .inner > input {
+            margin-bottom: 24px;
+        }
+
+        .wrap > .inner > .btn {
+            margin-bottom: 24px;
+        }
+        .wrap > .inner > input, .wrap > .inner > .result, .wrap > .inner > .btn {
+            width: 100%;
+        }
+    </style>
+</head>
+
+<body>
+
+<div class="wrap" id="app">
+    <div class="inner">
+        <input type="text" v-model="numberInput"/>
+        <div class="btn">
+            <button v-on:click="segitiga()">Generate Segitiga</button>
+            <button v-on:click="ganjil()">Generate Bilangan Ganjil</button>
+            <button v-on:click="prima()">Generate Bilangan Prima</button>
+        </div>
+        
+        <div class="result">
+            <h2>Result : </h2>
+            <p v-html="result" v-if="isActive"></p>
+            <ul v-else style="list-style: none;">
+                <li v-for="result in arr"><span v-html="result"></span></li>
+            </ul>
+        </div>
+    </div>
+</div>
+
+</body>
+
+<script>
+new Vue({
+    el: "#app",
+    delimiter: ['${', '}'],
+
+    data : {
+        numberInput: '',
+        result: '',
+        arr: [],
+        isActive: false,
+    },
+    methods: {
+        segitiga: function() {
+            const vm = this
+            vm.isActive = false;
+            let f_data = new FormData()
+            f_data.append('csrfmiddlewaretoken', '{{ csrf_token }}')
+            f_data.append('numberInput', this.numberInput)
+            let url = '/segitiga'
+            axios.post(
+                url, f_data,
+                { headers: { 'Content-Type': 'multipart/form-data' } }
+            ).then(function (response) {
+                console.log(response);
+                vm.arr = response.data.numberInput
+                // vm.result = vm.result[0]
+            }).catch(function (error){
+                console.log(error.response)
+            })
+
+        },
+
+        ganjil: function() {
+            const vm = this
+            let f_data = new FormData()
+            f_data.append('csrfmiddlewaretoken', '{{ csrf_token }}')
+            f_data.append('numberInput', this.numberInput)
+            let url = '/ganjil'
+            axios.post(
+                url, f_data,
+                { headers: { 'Content-Type': 'multipart/form-data' } }
+            ).then(function (response) {
+                console.log(response);
+                vm.isActive = true;
+                vm.result = 'Bilangan Ganjil : ' +  response.data.numberInput
+            }).catch(function (error){
+                console.log(error.response)
+            })
+        },
+
+        prima: function() {
+
+            const vm = this
+            let f_data = new FormData()
+            f_data.append('csrfmiddlewaretoken', '{{ csrf_token }}')
+            f_data.append('numberInput', this.numberInput)
+            let url = '/prima'
+            axios.post(
+                url, f_data,
+                { headers: { 'Content-Type': 'multipart/form-data' } }
+            ).then(function (response) {
+                console.log(response.data);
+                vm.isActive = true;
+                vm.result = 'Bilangan Prima : ' + response.data.numberInput
+            }).catch(function (error){
+                console.log(error.response)
+            })
+        },
+    }
+});
+
+</script>
+
+</html>
